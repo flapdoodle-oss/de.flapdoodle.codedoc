@@ -24,3 +24,6 @@ velocity.log
 
 # idea settings #
 .idea
+/base/target/
+/maven-plugin/target/
+/maven-test/target/
