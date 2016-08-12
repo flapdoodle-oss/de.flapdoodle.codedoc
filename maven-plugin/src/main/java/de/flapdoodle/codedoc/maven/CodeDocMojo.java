@@ -22,11 +22,18 @@ import java.io.IOException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Execute;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
+/**
+ * @see https://maven.apache.org/guides/plugin/guide-java-plugin-development.html
+ * @see https://books.sonatype.com/mvnref-book/reference/writing-plugins-sect-custom-plugin.html
+ * @author mosmann
+ */
 @Mojo( name = "touch", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
+@Execute(goal = "touch", phase = LifecyclePhase.PREPARE_PACKAGE)
 public class CodeDocMojo extends AbstractMojo {
 
     /**
