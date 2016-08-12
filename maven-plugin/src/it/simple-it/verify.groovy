@@ -14,20 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.codedoc.maven;
+File touchFile = new File( basedir, "target/touch.txt" );
 
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-
-@Mojo(name = "codedoc", defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
-public class CodeDocMojo extends AbstractMojo {
-
-	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info( "---------------CodeDoc Mojo---------------" );
-	}
-
-}
+assert touchFile.isFile()
