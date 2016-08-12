@@ -26,7 +26,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-@Mojo( name = "touch", defaultPhase = LifecyclePhase.PROCESS_SOURCES )
+@Mojo( name = "touch", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
 public class CodeDocMojo extends AbstractMojo {
 
     /**
