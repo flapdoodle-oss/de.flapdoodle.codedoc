@@ -5,13 +5,13 @@
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <version>9</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.flapdoodle.codedoc</groupId>
-    <artifactId>de.flapdoodle.codedoc</artifactId>
-    <name>flapdoodle codedoc</name>
+    <artifactId>de.flapdoodle.parent</artifactId>
+    <name>codedoc project</name>
     <description>merge code and markdown for documentation</description>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -262,10 +262,12 @@
     <profiles>
         <profile>
             <id>doclint-java8-disable</id>
+            <!--
             <activation>
                 <jdk>[1.8,)</jdk>
             </activation>
-
+            -->
+            
             <build>
                 <plugins>
                     <plugin>
