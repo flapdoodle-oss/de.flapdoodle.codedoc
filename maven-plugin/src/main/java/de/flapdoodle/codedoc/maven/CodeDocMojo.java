@@ -31,6 +31,7 @@ import org.apache.maven.plugins.annotations.Parameter;
  * @see https://maven.apache.org/guides/plugin/guide-java-plugin-development.html
  * @see https://books.sonatype.com/mvnref-book/reference/writing-plugins-sect-custom-plugin.html
  * @author mosmann
+ * 
  */
 @Mojo( name = "touch", defaultPhase = LifecyclePhase.PREPARE_PACKAGE )
 @Execute(goal = "touch", phase = LifecyclePhase.PREPARE_PACKAGE)

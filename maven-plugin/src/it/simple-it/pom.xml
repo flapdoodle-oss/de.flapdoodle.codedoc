@@ -22,7 +22,7 @@
         <executions>
           <execution>
             <id>touch</id>
-            <phase>validate</phase>
+            <phase>prepare-package</phase>
             <goals>
               <goal>touch</goal>
             </goals>
