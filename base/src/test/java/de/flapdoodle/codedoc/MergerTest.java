@@ -18,4 +18,7 @@ package de.flapdoodle.codedoc;
 
 public class MergerTest {
 
+	public void methodReferenceShouldResolve() {
+		String methodRef="de.flapdoodle.codedoc.Sample.foo(String, int)";
+	}
 }
