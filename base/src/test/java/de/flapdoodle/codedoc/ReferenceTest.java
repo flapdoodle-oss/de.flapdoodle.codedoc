@@ -16,32 +16,63 @@
  */
 package de.flapdoodle.codedoc;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 public class ReferenceTest {
 	
 	@Test
+	public void noPackageReference() {
+		String asString="Sample";
+		Reference result = Reference.parse(asString).get();
+		assertFalse(result.packageName().isPresent());
+		assertEquals("Sample",result.className());
+	}
+	
+	@Test
 	public void classReference() {
 		String asString="de.flapdoodle.codedoc.Sample";
-		Reference result = Reference.parse(asString);
+		Reference result = Reference.parse(asString).get();
+		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
+		assertEquals("Sample",result.className());
+		assertFalse(result.constructor().isPresent());
+		assertFalse(result.method().isPresent());
 	}
 	
 	@Test
 	public void constructorReference() {
 		String asString="de.flapdoodle.codedoc.Sample.Sample(boolean)";
-		Reference result = Reference.parse(asString);
+		Reference result = Reference.parse(asString).get();
+		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
+		assertEquals("Sample",result.className());
+		assertTrue(result.constructor().isPresent());
+		assertEquals("[boolean]",result.constructor().get().arguments().toString());
+		assertFalse(result.method().isPresent());
 	}
 	
 	@Test
 	public void methodReference() {
 		String asString="de.flapdoodle.codedoc.Sample.twoArg(String, int)";
-		Reference result = Reference.parse(asString);
+		Reference result = Reference.parse(asString).get();
+		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
+		assertEquals("Sample",result.className());
+		assertFalse(result.constructor().isPresent());
+		assertTrue(result.method().isPresent());
+		assertEquals("[String, int]",result.method().get().arguments().toString());
 	}
 	
 	@Test
 	public void genericMethodReference() {
 		String asString="de.flapdoodle.codedoc.Sample.generic(T)";
-		Reference result = Reference.parse(asString);
+		Reference result = Reference.parse(asString).get();
+		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
+		assertEquals("Sample",result.className());
+		assertFalse(result.constructor().isPresent());
+		assertTrue(result.method().isPresent());
+		assertEquals("[T]",result.method().get().arguments().toString());
 	}
 	
 }

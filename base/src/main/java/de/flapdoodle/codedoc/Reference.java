@@ -20,56 +20,88 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.immutables.value.Value;
+import org.immutables.value.Value.Parameter;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
+import de.flapdoodle.codedoc.ImmutableReference.Builder;
+
 @Value.Immutable
 public abstract class Reference {
 	
-	private static final Pattern PACKAGE_AND_CLASS_PATTERN=Pattern.compile("^(?<package>([a-z0-9]+\\.)+)(?<class>[A-Z][A-Za-z0-9]+)(\\.(?<constructor>\\k<class>))?(\\.(?<method>[A-Za-z0-9]+))?");
+	private static final Pattern PACKAGE_AND_CLASS_PATTERN=Pattern.compile("^(?<package>([a-z0-9]+\\.)*)(?<class>[A-Z][A-Za-z0-9]+)(\\.(?<constructor>\\k<class>))?(\\.(?<method>[A-Za-z0-9]+))?");
 	private static final Pattern METHOD_ARGS_PATTERN=Pattern.compile("\\("
 			+ "(?<body>.*)"
 			+ "\\)");
 	private static final Pattern METHOD_ARG_PATTERN=Pattern.compile("\\s?(?<arg>[^,.]+)\\s?,?\\s?");
 	
+	public abstract Optional<String> packageName();
 	public abstract String className();
-	public abstract Optional<String> method();
+	public abstract Optional<Method> method();
+	public abstract Optional<Constructor> constructor();
 	
-	public static abstract class WithArgumentTypes {
+	@Value.Immutable
+	public static abstract class Constructor {
+		@Parameter
 		public abstract ImmutableList<String> arguments();
 	}
 	
 	@Value.Immutable
-	public static abstract class Constructor extends WithArgumentTypes {
+	public static abstract class Method {
+		@Parameter
+		public abstract String name();
 		
+		@Parameter
+		public abstract ImmutableList<String> arguments();
 	}
 	
-	public static Reference parse(String src) {
-		int lastDot=src.lastIndexOf('.');
-		int openBrace=src.indexOf('(');
-		
-		System.out.println("->"+src);
+	public static Optional<? extends Reference> parse(String src) {
+		Optional<? extends Reference> ret=Optional.absent();
 		
 		Matcher matcher = PACKAGE_AND_CLASS_PATTERN.matcher(src);
+		
 		if (matcher.matches()) {
-			System.out.println("is class: "+src+" -> "+matcher.group("package")+matcher.group("class"));
+			Builder builder = ImmutableReference.builder();
+			String packageName = matcher.group("package");
+			String className = matcher.group("class");
+			if (!packageName.isEmpty()) {
+				builder.packageName(packageName.substring(0, packageName.length()-1));
+			}
+			builder.className(className);
+			
+			ret=Optional.of(builder.build());
 		} else {
 			if (matcher.find(0)) {
-				System.out.println("start with class: "+src+" -> "+matcher.group("package")+matcher.group("class")+"?Const="+matcher.group("constructor")+"?Method="+matcher.group("method"));
+				Builder builder = ImmutableReference.builder();
+				String packageName = matcher.group("package");
+				String className = matcher.group("class");
+				if (!packageName.isEmpty()) {
+					builder.packageName(packageName.substring(0, packageName.length()-1));
+				}
+				builder.className(className);
+				
+				String constructor = matcher.group("constructor");
+				String methodName = matcher.group("method");
 				String left = src.substring(matcher.end());
-				System.out.println("left: "+left);
 				Matcher methodMatcher = METHOD_ARGS_PATTERN.matcher(left);
 				if (methodMatcher.matches()) {
-					System.out.println("method body: "+methodMatcher.group("body"));
-					System.out.println("args: "+methodArgs(methodMatcher.group("body")));
+					String methodArgsBody = methodMatcher.group("body");
+					ImmutableList<String> methodArgs = methodArgs(methodArgsBody);
+					
+					if (constructor!=null) {
+						builder.constructor(ImmutableConstructor.of(methodArgs));
+					} else {
+						if (methodName!=null) {
+							builder.method(ImmutableMethod.of(methodName, methodArgs));
+						}
+					}
+					ret=Optional.of(builder.build());
 				}
-			} else {
-				System.out.println("unknown: "+src);
 			}
 		}
-		return ImmutableReference.builder()
-				.build();
+		
+		return ret;
 	}
 	
 	private static ImmutableList<String> methodArgs(String group) {
