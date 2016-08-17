@@ -16,14 +16,26 @@
  */
 package de.flapdoodle.codedoc;
 
-import org.immutables.value.Value;
+import org.junit.Test;
 
-@Value.Immutable
-public abstract class Reference {
-	
-	public abstract String className();
-	
-	public static Reference parse(String src) {
-		return null;
+public class ReferenceTest {
+
+	@Test
+	public void constructorReference() {
+		String asString="de.flapdoodle.codedoc.Sample.Sample(boolean)";
+		Reference result = Reference.parse(asString);
 	}
+	
+	@Test
+	public void methodReference() {
+		String asString="de.flapdoodle.codedoc.Sample.twoArg(String, int)";
+		Reference result = Reference.parse(asString);
+	}
+	
+	@Test
+	public void genericMethodReference() {
+		String asString="de.flapdoodle.codedoc.Sample.generic(T)";
+		Reference result = Reference.parse(asString);
+	}
+	
 }

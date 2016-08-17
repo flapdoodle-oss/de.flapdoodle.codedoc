@@ -17,11 +17,19 @@
 package de.flapdoodle.codedoc;
 
 public class Sample {
+	
+	public void Sample(boolean a) {
+		// line comment
+	}
 
-	public void foo(String a, int b) {
+	public void twoArg(String a, int b) {
 		/* comment */
 		if (true) {
 			System.out.println("-->");
 		}
+	}
+	
+	public <T> void generic(T value) {
+		
 	}
 }
