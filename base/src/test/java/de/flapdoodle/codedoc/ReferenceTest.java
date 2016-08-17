@@ -19,7 +19,13 @@ package de.flapdoodle.codedoc;
 import org.junit.Test;
 
 public class ReferenceTest {
-
+	
+	@Test
+	public void classReference() {
+		String asString="de.flapdoodle.codedoc.Sample";
+		Reference result = Reference.parse(asString);
+	}
+	
 	@Test
 	public void constructorReference() {
 		String asString="de.flapdoodle.codedoc.Sample.Sample(boolean)";
