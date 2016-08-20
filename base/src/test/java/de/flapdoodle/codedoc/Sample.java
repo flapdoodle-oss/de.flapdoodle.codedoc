@@ -32,4 +32,19 @@ public class Sample {
 	public <T> void generic(T value) {
 		
 	}
+	
+	/**
+	 * some javadoc
+	 * @param a
+	 */
+	public void withJavaDoc(Boolean a) {
+		// noop
+	}
+	
+	/*
+	 * some comment
+	 */
+	public void withComment(String a) {
+		// noop again
+	}
 }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.codedoc;
+package de.flapdoodle.codedoc.java;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,8 +24,6 @@ import org.immutables.value.Value.Parameter;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-
-import de.flapdoodle.codedoc.ImmutableReference.Builder;
 
 @Value.Immutable
 public abstract class Reference {
@@ -62,7 +60,7 @@ public abstract class Reference {
 		Matcher matcher = PACKAGE_AND_CLASS_PATTERN.matcher(src);
 		
 		if (matcher.matches()) {
-			Builder builder = ImmutableReference.builder();
+			ImmutableReference.Builder builder = ImmutableReference.builder();
 			String packageName = matcher.group("package");
 			String className = matcher.group("class");
 			if (!packageName.isEmpty()) {
@@ -73,7 +71,7 @@ public abstract class Reference {
 			ret=Optional.of(builder.build());
 		} else {
 			if (matcher.find(0)) {
-				Builder builder = ImmutableReference.builder();
+				ImmutableReference.Builder builder = ImmutableReference.builder();
 				String packageName = matcher.group("package");
 				String className = matcher.group("class");
 				if (!packageName.isEmpty()) {
