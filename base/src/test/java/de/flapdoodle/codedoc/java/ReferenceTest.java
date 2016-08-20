@@ -32,6 +32,7 @@ public class ReferenceTest {
 		Reference result = Reference.parse(asString).get();
 		assertFalse(result.packageName().isPresent());
 		assertEquals("Sample",result.className());
+		assertEquals(asString,result.packageAndClassname());
 	}
 	
 	@Test
@@ -40,6 +41,7 @@ public class ReferenceTest {
 		Reference result = Reference.parse(asString).get();
 		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
 		assertEquals("Sample",result.className());
+		assertEquals(asString,result.packageAndClassname());
 		assertFalse(result.constructor().isPresent());
 		assertFalse(result.method().isPresent());
 	}

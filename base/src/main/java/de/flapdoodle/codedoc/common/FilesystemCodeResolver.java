@@ -3,6 +3,7 @@ package de.flapdoodle.codedoc.common;
 import java.io.File;
 import java.nio.file.Path;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 
 import de.flapdoodle.codedoc.CodeResolver;
@@ -20,18 +21,24 @@ public class FilesystemCodeResolver implements CodeResolver {
 	
 	@Override
 	public Optional<CodeSample> resolve(Path currentDirectory, ResourceLocator resourceLocator) {
-		Path resolvedLocation = currentDirectory.resolve(resourceLocator.value());
-		File resolvedFile = resolvedLocation.toFile();
-		if (resolvedFile.exists() && resolvedFile.isFile() && resolvedFile.canRead()) {
-			String fileName = resolvedFile.getName();
-			String codeType = "?";
-			int idx=fileName.lastIndexOf('.');
-			if (idx!=-1) {
-				codeType=codeTypeMapping.codeTypeOf(fileName.substring(idx+1));
-			}
-			return Optional.of(CodeSample.of(codeType, Files.readFile().apply(resolvedFile)));
+		final Path resolvedLocation = currentDirectory.resolve(resourceLocator.value());
+		return Files.contentOf(resolvedLocation)
+				.transform(new Function<String, CodeSample>() {
+
+					@Override
+					public CodeSample apply(String code) {
+						return CodeSample.of(codeType(resolvedLocation.getFileName().toString()), code);
+					}
+				});
+	}
+
+	private String codeType(String fileName) {
+		String codeType = "?";
+		int idx=fileName.lastIndexOf('.');
+		if (idx!=-1) {
+			codeType=codeTypeMapping.codeTypeOf(fileName.substring(idx+1));
 		}
-		return Optional.absent();
+		return codeType;
 	}
 
 

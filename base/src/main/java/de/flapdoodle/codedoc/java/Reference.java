@@ -20,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.immutables.value.Value;
+import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Parameter;
 
 import com.google.common.base.Optional;
@@ -38,6 +39,11 @@ public abstract class Reference {
 	public abstract String className();
 	public abstract Optional<Method> method();
 	public abstract Optional<Constructor> constructor();
+	
+	@Derived
+	public String packageAndClassname() {
+		return packageName().isPresent() ? packageName().get()+"."+className() : className();
+	}
 	
 	@Value.Immutable
 	public static abstract class Constructor {
