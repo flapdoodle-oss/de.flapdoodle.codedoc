@@ -1,4 +1,4 @@
-package de.flapdoodle.codedoc.common;
+package de.flapdoodle.codedoc.resolver.files;
 
 import java.io.File;
 import java.nio.file.Path;

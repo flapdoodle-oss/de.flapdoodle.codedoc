@@ -1,4 +1,4 @@
-package de.flapdoodle.codedoc.common;
+package de.flapdoodle.codedoc.resolver.files;
 
 public interface FileExtensionCodeTypeMapping {
 	String codeTypeOf(String fileExtension);
