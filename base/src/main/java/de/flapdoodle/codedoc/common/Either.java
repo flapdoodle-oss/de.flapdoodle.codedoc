@@ -10,11 +10,9 @@ public abstract class Either<L,R> {
 
     public abstract Either<R, L> swap();
 
-    @Derived
     public L left() {
     	throw new IllegalArgumentException("not left");
     };
-    @Derived
     public R right() {
     	throw new IllegalArgumentException("not right");
     }

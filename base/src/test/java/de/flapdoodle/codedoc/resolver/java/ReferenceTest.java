@@ -47,6 +47,17 @@ public class ReferenceTest {
 	}
 	
 	@Test
+	public void shortClassReference() {
+		String asString="foo.Foo";
+		Reference result = Reference.parse(asString).get();
+		assertEquals("foo",result.packageName().get());
+		assertEquals("Foo",result.className());
+		assertEquals(asString,result.packageAndClassname());
+		assertFalse(result.constructor().isPresent());
+		assertFalse(result.method().isPresent());
+	}
+	
+	@Test
 	public void constructorReference() {
 		String asString="de.flapdoodle.codedoc.Sample.Sample(boolean)";
 		Reference result = Reference.parse(asString).get();
