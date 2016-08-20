@@ -1,7 +1,5 @@
 package de.flapdoodle.codedoc.exceptions;
 
-import com.google.common.base.Function;
-
 public abstract class Exceptions {
 
 	private Exceptions() {
