@@ -18,9 +18,11 @@ import de.flapdoodle.codedoc.common.Optionals;
 public class JavaReferencenCodeResolver implements CodeResolver {
 
 	private JavaSourceCodeResolver sourceCodeResolver;
+	private JavaSourceReferenceResolver referenceResolver;
 
-	public JavaReferencenCodeResolver(JavaSourceCodeResolver sourceCodeResolver) {
+	public JavaReferencenCodeResolver(JavaSourceCodeResolver sourceCodeResolver, JavaSourceReferenceResolver referenceResolver) {
 		this.sourceCodeResolver = sourceCodeResolver;
+		this.referenceResolver = referenceResolver;
 	}
 	
 	@Override
@@ -46,9 +48,14 @@ public class JavaReferencenCodeResolver implements CodeResolver {
 		return codeOf(ref, sourceCodeResolver.resolve(asPath(ref)));
 	}
 
-	private Either<CodeSample, Error> codeOf(Reference ref, Either<String, Error> resolve) {
-		// TODO Auto-generated method stub
-		return null;
+	private Either<CodeSample, Error> codeOf(final Reference ref, Either<String, Error> resolved) {
+		return resolved.flatmapLeft(new Function<String, Either<CodeSample,Error>>() {
+
+			@Override
+			public Either<CodeSample, Error> apply(String input) {
+				return referenceResolver.resolve(ref, input);
+			}
+		}); 
 	}
 
 	protected static Path asPath(Reference ref) {
