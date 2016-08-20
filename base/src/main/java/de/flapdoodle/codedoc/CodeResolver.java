@@ -2,8 +2,9 @@ package de.flapdoodle.codedoc;
 
 import java.nio.file.Path;
 
-import com.google.common.base.Optional;
+import de.flapdoodle.codedoc.common.Either;
+import de.flapdoodle.codedoc.common.Error;
 
 public interface CodeResolver {
-	Optional<CodeSample> resolve(Path currentDirectory, ResourceLocator resourceLocator);
+	Either<CodeSample, Error> resolve(Path currentDirectory, ResourceLocator resourceLocator);
 }

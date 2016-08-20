@@ -1,6 +1,6 @@
 package de.flapdoodle.codedoc.exceptions;
 
-public interface ThrowingFunction<F,T,E extends Exception> {
+public interface ThrowingFunction<F,T> {
 
-	T apply(F input) throws E;
+	T apply(F input) throws Exception;
 }

@@ -6,11 +6,13 @@ import java.util.Arrays;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
 
 import de.flapdoodle.codedoc.CodeResolver;
 import de.flapdoodle.codedoc.CodeSample;
 import de.flapdoodle.codedoc.ResourceLocator;
+import de.flapdoodle.codedoc.common.Either;
+import de.flapdoodle.codedoc.common.Error;
 import de.flapdoodle.codedoc.common.Optionals;
 
 public class JavaReferencenCodeResolver implements CodeResolver {
@@ -22,22 +24,29 @@ public class JavaReferencenCodeResolver implements CodeResolver {
 	}
 	
 	@Override
-	public Optional<CodeSample> resolve(Path currentDirectory, ResourceLocator resourceLocator) {
+	public Either<CodeSample, Error> resolve(Path currentDirectory, final ResourceLocator resourceLocator) {
 		Optional<? extends Reference> reference = Reference.parse(resourceLocator.value());
-		return Optionals.flatmap(reference.transform(new Function<Reference, Optional<CodeSample>>() {
+		Either<? extends Reference, Error> refOrError = Optionals.or(reference, new Supplier<Error>() {
 
 			@Override
-			public Optional<CodeSample> apply(Reference input) {
+			public Error get() {
+				return Error.with("could not parse reference "+resourceLocator.value());
+			}
+		});
+		return refOrError.flatmapLeft(new Function<Reference, Either<CodeSample, Error>>() {
+
+			@Override
+			public Either<CodeSample, Error> apply(Reference input) {
 				return resolve(input);
 			}
-		}));
+		});
 	}
 
-	protected Optional<CodeSample> resolve(Reference ref) {
+	protected Either<CodeSample, Error> resolve(Reference ref) {
 		return codeOf(ref, sourceCodeResolver.resolve(asPath(ref)));
 	}
 
-	private Optional<CodeSample> codeOf(Reference ref, Optional<String> resolve) {
+	private Either<CodeSample, Error> codeOf(Reference ref, Either<String, Error> resolve) {
 		// TODO Auto-generated method stub
 		return null;
 	}

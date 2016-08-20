@@ -7,9 +7,11 @@ import java.nio.file.Path;
 
 import com.google.common.base.Optional;
 
-import de.flapdoodle.codedoc.CodeSample;
+import de.flapdoodle.codedoc.common.Either;
+import de.flapdoodle.codedoc.common.Error;
 import de.flapdoodle.codedoc.exceptions.ExceptionMappingFunction;
 import de.flapdoodle.codedoc.exceptions.Exceptions;
+import de.flapdoodle.codedoc.exceptions.OnException;
 import de.flapdoodle.codedoc.exceptions.ThrowingFunction;
 
 public abstract class Files {
@@ -18,7 +20,7 @@ public abstract class Files {
 	}
 	
 	public static ExceptionMappingFunction<File, String> readFile() {
-		return Exceptions.call(new ThrowingFunction<File, String, IOException>() {
+		return Exceptions.call(new ThrowingFunction<File, String>() {
 
 			@Override
 			public String apply(File file) throws IOException {
@@ -27,11 +29,20 @@ public abstract class Files {
 		});
 	}
 	
-	public static Optional<String> contentOf(Path file) {
+	public static Either<String, Error> contentOf(Path file) {
 		File resolvedFile = file.toFile();
-		if (resolvedFile.exists() && resolvedFile.isFile() && resolvedFile.canRead()) {
-			return Optional.of(Files.readFile().apply(resolvedFile));
-		}
-		return Optional.absent();
+		return readFile().or(new OnException<File, Error>() {
+
+			@Override
+			public Error apply(File context, Exception exception) {
+				return Error.with("could not read "+context, exception);
+			}
+			
+		}).apply(resolvedFile);
+		
+//		if (resolvedFile.exists() && resolvedFile.isFile() && resolvedFile.canRead()) {
+//			return Optional.of(Files.readFile().apply(resolvedFile));
+//		}
+//		return Optional.absent();
 	}
 }

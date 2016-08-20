@@ -2,8 +2,9 @@ package de.flapdoodle.codedoc.resolver.java;
 
 import java.nio.file.Path;
 
-import com.google.common.base.Optional;
+import de.flapdoodle.codedoc.common.Either;
+import de.flapdoodle.codedoc.common.Error;
 
 public interface JavaSourceCodeResolver {
-	public Optional<String> resolve(Path classAsPath);
+	public Either<String, Error> resolve(Path classAsPath);
 }

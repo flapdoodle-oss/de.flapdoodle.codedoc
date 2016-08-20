@@ -4,6 +4,8 @@ import org.immutables.value.Value;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Parameter;
 
+import com.google.common.base.Function;
+
 public abstract class Either<L,R> {
 
     public abstract Either<R, L> swap();
@@ -18,6 +20,22 @@ public abstract class Either<L,R> {
     }
     
     public abstract boolean isLeft();
+    
+    public <LX> Either<LX,R> mapLeft(Function<? super L, LX> function) {
+    	return isLeft() ? Either.<LX,R>left(function.apply(left())) : Either.<LX,R>right(right());
+    }
+
+    public <LX> Either<LX,R> flatmapLeft(Function<? super L, Either<LX,R>> function) {
+    	return isLeft() ? function.apply(left()) : Either.<LX,R>right(right());
+    }
+
+    public <RX> Either<L,RX> mapRight(Function<? super R, RX> function) {
+    	return isLeft() ? Either.<L,RX>left(left()) : Either.<L,RX>right(function.apply(right()));
+    }
+
+    public <RX> Either<L,RX> flatmapRight(Function<? super R, Either<L,RX>> function) {
+    	return isLeft() ? Either.<L,RX>left(left()) : function.apply(right());
+    }
 
     public static <L,R> Left<L,R> left(L left) {
     	return Left.of(left);

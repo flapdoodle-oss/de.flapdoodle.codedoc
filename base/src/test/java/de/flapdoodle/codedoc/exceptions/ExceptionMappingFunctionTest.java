@@ -10,7 +10,7 @@ public class ExceptionMappingFunctionTest {
 
 	@Test
 	public void throwRuntimeException() {
-		ExceptionMappingFunction<String, Integer> function = ExceptionMappingFunction.of(new ThrowingFunction<String, Integer, IOException>() {
+		ExceptionMappingFunction<String, Integer> function = ExceptionMappingFunction.of(new ThrowingFunction<String, Integer>() {
 
 			@Override
 			public Integer apply(String input) throws IOException {
@@ -27,7 +27,7 @@ public class ExceptionMappingFunctionTest {
 	
 	@Test
 	public void catchAndMapResult() {
-		ExceptionMappingFunction<String, Integer> function = ExceptionMappingFunction.of(new ThrowingFunction<String, Integer, IllegalArgumentException>() {
+		ExceptionMappingFunction<String, Integer> function = ExceptionMappingFunction.of(new ThrowingFunction<String, Integer>() {
 
 			@Override
 			public Integer apply(String input) throws IllegalArgumentException {

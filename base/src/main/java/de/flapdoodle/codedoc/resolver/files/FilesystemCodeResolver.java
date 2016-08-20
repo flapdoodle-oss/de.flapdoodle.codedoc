@@ -9,6 +9,8 @@ import com.google.common.base.Optional;
 import de.flapdoodle.codedoc.CodeResolver;
 import de.flapdoodle.codedoc.CodeSample;
 import de.flapdoodle.codedoc.ResourceLocator;
+import de.flapdoodle.codedoc.common.Either;
+import de.flapdoodle.codedoc.common.Error;
 import de.flapdoodle.codedoc.io.Files;
 
 public class FilesystemCodeResolver implements CodeResolver {
@@ -20,10 +22,10 @@ public class FilesystemCodeResolver implements CodeResolver {
 	}
 	
 	@Override
-	public Optional<CodeSample> resolve(Path currentDirectory, ResourceLocator resourceLocator) {
+	public Either<CodeSample, Error> resolve(Path currentDirectory, ResourceLocator resourceLocator) {
 		final Path resolvedLocation = currentDirectory.resolve(resourceLocator.value());
 		return Files.contentOf(resolvedLocation)
-				.transform(new Function<String, CodeSample>() {
+				.mapLeft(new Function<String, CodeSample>() {
 
 					@Override
 					public CodeSample apply(String code) {
