@@ -34,6 +34,7 @@ public class ReferenceTest {
 		assertFalse(result.packageName().isPresent());
 		assertEquals("Sample",result.className());
 		assertEquals(asString,result.packageAndClassname());
+		assertEquals(Scope.Exact,result.scope());
 	}
 	
 	@Test
@@ -45,6 +46,7 @@ public class ReferenceTest {
 		assertEquals(asString,result.packageAndClassname());
 		assertFalse(result.constructor().isPresent());
 		assertFalse(result.method().isPresent());
+		assertEquals(Scope.Exact,result.scope());
 	}
 	
 	@Test
@@ -56,6 +58,7 @@ public class ReferenceTest {
 		assertEquals(asString,result.packageAndClassname());
 		assertFalse(result.constructor().isPresent());
 		assertFalse(result.method().isPresent());
+		assertEquals(Scope.Exact,result.scope());
 	}
 	
 	@Test
@@ -67,6 +70,7 @@ public class ReferenceTest {
 		assertTrue(result.constructor().isPresent());
 		assertEquals("[boolean]",result.constructor().get().arguments().toString());
 		assertFalse(result.method().isPresent());
+		assertEquals(Scope.Body,result.scope());
 	}
 	
 	@Test
@@ -78,6 +82,7 @@ public class ReferenceTest {
 		assertFalse(result.constructor().isPresent());
 		assertTrue(result.method().isPresent());
 		assertEquals("[String, int]",result.method().get().arguments().toString());
+		assertEquals(Scope.Body,result.scope());
 	}
 	
 	@Test
@@ -89,6 +94,7 @@ public class ReferenceTest {
 		assertFalse(result.constructor().isPresent());
 		assertTrue(result.method().isPresent());
 		assertEquals("[T]",result.method().get().arguments().toString());
+		assertEquals(Scope.Body,result.scope());
 	}
 	
 	@Test

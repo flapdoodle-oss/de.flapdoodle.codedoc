@@ -10,24 +10,48 @@ import de.flapdoodle.codedoc.common.Error;
 
 public class JavaSourceReferenceResolverImplTest {
 
+	private final String code="\n"
+			+ "\n"
+			+ "/* some comment */\n"
+			+ "import foo;\n"
+			+ "\n"
+			+ "public class Foo {/*comment*/}"
+			+ "\n"
+			+ "\n"
+			+ "\n";
+
 	@Test
-	public void resolveFullClass() {
-		String code="\n"
-				+ "\n"
-				+ "/* some comment */\n"
-				+ "import foo;\n"
-				+ "\n"
-				+ "public class Foo {}"
-				+ "\n"
-				+ "\n"
-				+ "\n";
-		
+	public void resolveClassWithDefaultScope() {
 		String match="import foo;\n"
 				+ "\n"
-				+ "public class Foo {}\n"
+				+ "public class Foo {/*comment*/}\n"
 				+ "\n";
 		
 		Reference ref=Reference.parse("foo.Foo").get();
+		Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
+		
+		assertTrue(result.isLeft());
+		assertEquals(match, result.left().code());
+		assertEquals("java", result.left().type());
+	}
+
+	@Test
+	public void resolveClassWithScopeBody() {
+		String match="/*comment*/";
+		
+		Reference ref=Reference.parse("foo.Foo body").get();
+		Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
+		
+		assertTrue(result.isLeft());
+		assertEquals(match, result.left().code());
+		assertEquals("java", result.left().type());
+	}
+	
+	@Test
+	public void resolveClassWithScopeAll() {
+		String match=code;
+		
+		Reference ref=Reference.parse("foo.Foo all").get();
 		Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
 		
 		assertTrue(result.isLeft());

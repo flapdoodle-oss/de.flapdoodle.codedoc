@@ -52,8 +52,11 @@ public abstract class Reference {
 	
 	@Default
 	public Scope scope() {
+		if (isClassReference()) {
+			return Scope.Exact;
+		}
 		return Scope.Body;
-	};
+	}
 	
 	public enum Scope { Body, Exact, All;
 
@@ -68,11 +71,16 @@ public abstract class Reference {
 		}
 		throw new IllegalArgumentException("unknown scope");
 	} };
-	//@Derived
+	
 	@Auxiliary
 	public String packageAndClassname() {
 		return packageName().isPresent() ? packageName().get()+"."+className() : className();
 	}
+	
+	@Auxiliary
+	public boolean isClassReference() {
+		return !method().isPresent() && !constructor().isPresent();
+	};
 	
 	@Value.Immutable
 	public static abstract class Constructor {
