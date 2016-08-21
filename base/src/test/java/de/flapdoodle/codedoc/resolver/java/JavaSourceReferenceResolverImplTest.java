@@ -12,15 +12,26 @@ public class JavaSourceReferenceResolverImplTest {
 
 	@Test
 	public void resolveFullClass() {
-		String code="import foo;\n"
+		String code="\n"
 				+ "\n"
-				+ "public class Foo {\n"
-				+ "}\n";
+				+ "/* some comment */\n"
+				+ "import foo;\n"
+				+ "\n"
+				+ "public class Foo {}"
+				+ "\n"
+				+ "\n"
+				+ "\n";
+		
+		String match="import foo;\n"
+				+ "\n"
+				+ "public class Foo {}\n"
+				+ "\n";
 		
 		Reference ref=Reference.parse("foo.Foo").get();
 		Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
 		
 		assertTrue(result.isLeft());
-		assertEquals(CodeSample.of("java", code), result.left());
+		assertEquals(match, result.left().code());
+		assertEquals("java", result.left().type());
 	}
 }

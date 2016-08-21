@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import de.flapdoodle.codedoc.resolver.java.Reference;
+import de.flapdoodle.codedoc.resolver.java.Reference.Scope;
 
 public class ReferenceTest {
 	
@@ -90,4 +91,15 @@ public class ReferenceTest {
 		assertEquals("[T]",result.method().get().arguments().toString());
 	}
 	
+	@Test
+	public void additionalScope() {
+		String asString="de.flapdoodle.codedoc.Sample.twoArg(String, int) all";
+		Reference result = Reference.parse(asString).get();
+		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
+		assertEquals("Sample",result.className());
+		assertFalse(result.constructor().isPresent());
+		assertTrue(result.method().isPresent());
+		assertEquals("[String, int]",result.method().get().arguments().toString());
+		assertEquals(Scope.All,result.scope());
+	}
 }
