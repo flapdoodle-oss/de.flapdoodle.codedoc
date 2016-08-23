@@ -15,8 +15,7 @@ public class JavaSourceReferenceResolverImplTest {
 			+ "/* some comment */\n"
 			+ "import foo;\n"
 			+ "\n"
-			+ "public class Foo {/*comment*/}"
-			+ "\n"
+			+ "public class Foo {/*comment*/}\n"
 			+ "\n"
 			+ "\n";
 
@@ -25,6 +24,7 @@ public class JavaSourceReferenceResolverImplTest {
 		String match="import foo;\n"
 				+ "\n"
 				+ "public class Foo {/*comment*/}\n"
+				+ "\n"
 				+ "\n";
 		
 		Reference ref=Reference.parse("foo.Foo").get();
