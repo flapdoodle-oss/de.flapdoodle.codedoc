@@ -130,6 +130,9 @@
                         <include>src/**</include>
                         <include>**/test/**</include>
                     </includes>
+                    <excludes>
+                    	<exclude>**/*.txt</exclude>
+                    </excludes>
                     <!-- <excludes> <exclude>target/**</exclude> <exclude>.clover/**</exclude> 
                     </excludes> <useDefaultExcludes>true</useDefaultExcludes> -->
                     <!-- <mapping> <jwc>XML_STYLE</jwc> <application>XML_STYLE</application> 
