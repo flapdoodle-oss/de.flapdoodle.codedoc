@@ -2,7 +2,6 @@ package de.flapdoodle.codedoc.resolver.java;
 
 import java.io.StringReader;
 import java.util.List;
-import java.util.TooManyListenersException;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
@@ -136,6 +135,7 @@ public abstract class JavaParserAdapter {
 		return cut(code, first, last);
 	}
 
+	@Deprecated
 	static ImmutableList<TypeDeclaration> typeDeclarationOf(final Reference ref, CompilationUnit unit) {
 		return FluentIterable.from(unit.getTypes()).filter(new Predicate<TypeDeclaration>() {
 

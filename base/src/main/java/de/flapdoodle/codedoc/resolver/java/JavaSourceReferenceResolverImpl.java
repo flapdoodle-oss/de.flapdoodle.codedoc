@@ -1,8 +1,12 @@
 package de.flapdoodle.codedoc.resolver.java;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 
 import de.flapdoodle.codedoc.CodeSample;
 import de.flapdoodle.codedoc.common.Either;
@@ -23,6 +27,16 @@ public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResol
 	}
 
 	private static Either<CodeSample, Error> resolve(final Reference ref, String code, CompilationUnit unit) {
+		Optional<ClassOrInterfaceDeclaration> rootClass = JavaParserTreeWalker.rootClass(unit);
+		Preconditions.checkArgument(rootClass.isPresent(),"no root class found in unit");
+		
+		Optional<ClassOrInterfaceDeclaration> classOrInterface = JavaParserTreeWalker.firstOf(unit, ClassOrInterfaceDeclaration.class, new Predicate<ClassOrInterfaceDeclaration>() {
+			@Override
+			public boolean apply(ClassOrInterfaceDeclaration input) {
+				return input.getName().equals(ref.className());
+			}
+		});
+		
 		boolean typeMatches = !JavaParserAdapter.typeDeclarationOf(ref, unit).isEmpty();
 		if (!typeMatches) {
 			return Either.right(Error.with("type does not match "+unit.getTypes()));
@@ -43,8 +57,7 @@ public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResol
 		case All:
 			return Either.left(CodeSample.of("java", code));
 		case Exact:
-			return Either.left(CodeSample.of("java",
-					JavaParserAdapter.cut(code, unit)));
+			return Either.left(CodeSample.of("java", JavaParserAdapter.cut(code, unit)));
 		case Body:
 			TypeDeclaration typeDecl = JavaParserAdapter.typeDeclarationOf(ref, unit).get(0);
 //			System.out.println("children: "+typeDecl.getChildrenNodes());

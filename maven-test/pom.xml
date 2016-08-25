@@ -4,7 +4,7 @@
 
     <parent>
         <groupId>de.flapdoodle.codedoc</groupId>
-        <artifactId>de.flapdoodle.parent</artifactId>
+        <artifactId>de.flapdoodle.codedoc.parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
