@@ -17,16 +17,19 @@
 package de.flapdoodle.codedoc.resolver.java;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 
 import de.flapdoodle.codedoc.CodeSample;
 import de.flapdoodle.codedoc.common.Either;
 import de.flapdoodle.codedoc.common.Error;
+import de.flapdoodle.codedoc.resolver.java.Reference.Part;
 
 public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResolver {
 
@@ -46,25 +49,60 @@ public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResol
 		Optional<ClassOrInterfaceDeclaration> rootClass = JavaParserTreeWalker.rootClass(unit);
 		Preconditions.checkArgument(rootClass.isPresent(),"no root class found in unit");
 		
-		Optional<ClassOrInterfaceDeclaration> classOrInterface = JavaParserTreeWalker.firstOf(unit, ClassOrInterfaceDeclaration.class, new Predicate<ClassOrInterfaceDeclaration>() {
-			@Override
-			public boolean apply(ClassOrInterfaceDeclaration input) {
-				return input.getName().equals(ref.className());
+		Optional<? extends Node> current=Optional.of(unit);
+		for (final Reference.Part part : ref.parts()) {
+			if (current.isPresent()) {
+				if (part.constructor().isPresent()) {
+					
+				} else {
+					if (part.method().isPresent()) {
+						
+					} else {
+						current = JavaParserTreeWalker.firstOf(current.get(), ClassOrInterfaceDeclaration.class, new Predicate<ClassOrInterfaceDeclaration>() {
+							@Override
+							public boolean apply(ClassOrInterfaceDeclaration input) {
+								return input.getName().equals(part.className());
+							}
+						});
+					}
+				}
 			}
-		});
-		
-		boolean typeMatches = !JavaParserAdapter.typeDeclarationOf(ref, unit).isEmpty();
-		if (!typeMatches) {
-			return Either.right(Error.with("type does not match "+unit.getTypes()));
 		}
 		
-		if (ref.constructor().isPresent()) {
-			
-		} else if (ref.method().isPresent()) {
-			
-		} else {
-			return codeOfClass(code, unit, ref);
+		if (current.isPresent()) {
+			switch (ref.scope()) {
+			case All:
+				if ((ref.parts().size()==1) && (ref.parts().get(0).isClassReference())) {
+					return Either.left(CodeSample.of("java", code));
+				}
+				return Either.left(CodeSample.of("java", JavaParserAdapter.cut(code, current.get())));
+			case Exact:
+				return Either.left(CodeSample.of("java", JavaParserAdapter.cut(code, current.get())));
+			case Body:
+				return Either.left(CodeSample.of("java", JavaParserAdapter.bodyOf(code, current.get())));
+			}
 		}
+		
+//		Optional<ClassOrInterfaceDeclaration> classOrInterface = JavaParserTreeWalker.firstOf(unit, ClassOrInterfaceDeclaration.class, new Predicate<ClassOrInterfaceDeclaration>() {
+//			@Override
+//			public boolean apply(ClassOrInterfaceDeclaration input) {
+//				
+//				return input.getName().equals(parts.get(0).className());
+//			}
+//		});
+		
+//		boolean typeMatches = !JavaParserAdapter.typeDeclarationOf(ref, unit).isEmpty();
+//		if (!typeMatches) {
+//			return Either.right(Error.with("type does not match "+unit.getTypes()));
+//		}
+//		
+//		if (ref.constructor().isPresent()) {
+//			
+//		} else if (ref.method().isPresent()) {
+//			
+//		} else {
+//			return codeOfClass(code, unit, ref);
+//		}
 		return Either.right(Error.with("fooo"));
 	}
 
@@ -74,10 +112,10 @@ public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResol
 			return Either.left(CodeSample.of("java", code));
 		case Exact:
 			return Either.left(CodeSample.of("java", JavaParserAdapter.cut(code, unit)));
-		case Body:
-			TypeDeclaration typeDecl = JavaParserAdapter.typeDeclarationOf(ref, unit).get(0);
-//			System.out.println("children: "+typeDecl.getChildrenNodes());
-			return Either.left(CodeSample.of("java", JavaParserAdapter.bodyOf(code, typeDecl)));
+//		case Body:
+//			TypeDeclaration typeDecl = JavaParserAdapter.typeDeclarationOf(ref, unit).get(0);
+////			System.out.println("children: "+typeDecl.getChildrenNodes());
+//			return Either.left(CodeSample.of("java", JavaParserAdapter.bodyOf(code, typeDecl)));
 		}
 		return Either.right(Error.with("unknown scope " + ref.scope()));
 	}

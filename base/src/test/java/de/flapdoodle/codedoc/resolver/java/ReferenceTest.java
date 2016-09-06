@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import de.flapdoodle.codedoc.resolver.java.Reference;
+import de.flapdoodle.codedoc.resolver.java.Reference.Part;
 import de.flapdoodle.codedoc.resolver.java.Reference.Scope;
 
 public class ReferenceTest {
@@ -32,8 +33,9 @@ public class ReferenceTest {
 		String asString="Sample";
 		Reference result = Reference.parse(asString).get();
 		assertFalse(result.packageName().isPresent());
-		assertEquals("Sample",result.className());
-		assertEquals(asString,result.packageAndClassname());
+		assertTrue(result.simpleReference());
+		assertEquals("Sample",result.parts().get(0).className());
+		assertEquals(asString,result.asString());
 		assertEquals(Scope.Exact,result.scope());
 	}
 	
@@ -42,10 +44,11 @@ public class ReferenceTest {
 		String asString="de.flapdoodle.codedoc.Sample";
 		Reference result = Reference.parse(asString).get();
 		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
-		assertEquals("Sample",result.className());
-		assertEquals(asString,result.packageAndClassname());
-		assertFalse(result.constructor().isPresent());
-		assertFalse(result.method().isPresent());
+		Part firstPart = result.parts().get(0);
+		assertEquals("Sample",firstPart.className());
+		assertEquals(asString,result.asString());
+		assertFalse(firstPart.constructor().isPresent());
+		assertFalse(firstPart.method().isPresent());
 		assertEquals(Scope.Exact,result.scope());
 	}
 	
@@ -54,10 +57,11 @@ public class ReferenceTest {
 		String asString="foo.Foo";
 		Reference result = Reference.parse(asString).get();
 		assertEquals("foo",result.packageName().get());
-		assertEquals("Foo",result.className());
-		assertEquals(asString,result.packageAndClassname());
-		assertFalse(result.constructor().isPresent());
-		assertFalse(result.method().isPresent());
+		Part firstPart = result.parts().get(0);
+		assertEquals("Foo",firstPart.className());
+		assertEquals(asString,result.asString());
+		assertFalse(firstPart.constructor().isPresent());
+		assertFalse(firstPart.method().isPresent());
 		assertEquals(Scope.Exact,result.scope());
 	}
 	
@@ -66,10 +70,11 @@ public class ReferenceTest {
 		String asString="de.flapdoodle.codedoc.Sample.Sample(boolean)";
 		Reference result = Reference.parse(asString).get();
 		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
-		assertEquals("Sample",result.className());
-		assertTrue(result.constructor().isPresent());
-		assertEquals("[boolean]",result.constructor().get().arguments().toString());
-		assertFalse(result.method().isPresent());
+		Part firstPart = result.parts().get(0);
+		assertEquals("Sample",firstPart.className());
+		assertTrue(firstPart.constructor().isPresent());
+		assertEquals("[boolean]",firstPart.constructor().get().arguments().toString());
+		assertFalse(firstPart.method().isPresent());
 		assertEquals(Scope.Body,result.scope());
 	}
 	
@@ -78,10 +83,11 @@ public class ReferenceTest {
 		String asString="de.flapdoodle.codedoc.Sample.twoArg(String, int)";
 		Reference result = Reference.parse(asString).get();
 		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
-		assertEquals("Sample",result.className());
-		assertFalse(result.constructor().isPresent());
-		assertTrue(result.method().isPresent());
-		assertEquals("[String, int]",result.method().get().arguments().toString());
+		Part firstPart = result.parts().get(0);
+		assertEquals("Sample",firstPart.className());
+		assertFalse(firstPart.constructor().isPresent());
+		assertTrue(firstPart.method().isPresent());
+		assertEquals("[String, int]",firstPart.method().get().arguments().toString());
 		assertEquals(Scope.Body,result.scope());
 	}
 	
@@ -90,10 +96,11 @@ public class ReferenceTest {
 		String asString="de.flapdoodle.codedoc.Sample.generic(T)";
 		Reference result = Reference.parse(asString).get();
 		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
-		assertEquals("Sample",result.className());
-		assertFalse(result.constructor().isPresent());
-		assertTrue(result.method().isPresent());
-		assertEquals("[T]",result.method().get().arguments().toString());
+		Part firstPart = result.parts().get(0);
+		assertEquals("Sample",firstPart.className());
+		assertFalse(firstPart.constructor().isPresent());
+		assertTrue(firstPart.method().isPresent());
+		assertEquals("[T]",firstPart.method().get().arguments().toString());
 		assertEquals(Scope.Body,result.scope());
 	}
 	
@@ -102,10 +109,59 @@ public class ReferenceTest {
 		String asString="de.flapdoodle.codedoc.Sample.twoArg(String, int) all";
 		Reference result = Reference.parse(asString).get();
 		assertEquals("de.flapdoodle.codedoc",result.packageName().get());
-		assertEquals("Sample",result.className());
-		assertFalse(result.constructor().isPresent());
-		assertTrue(result.method().isPresent());
-		assertEquals("[String, int]",result.method().get().arguments().toString());
+		Part firstPart = result.parts().get(0);
+		assertEquals("Sample",firstPart.className());
+		assertFalse(firstPart.constructor().isPresent());
+		assertTrue(firstPart.method().isPresent());
+		assertEquals("[String, int]",firstPart.method().get().arguments().toString());
 		assertEquals(Scope.All,result.scope());
+	}
+	
+	@Test
+	public void methodInClassInMethod() {
+		String asString="de.flapdoodle.codedoc.sample.ClassInMethod.someMethod().Embedded.methodInEmbedded()";
+		Reference result = Reference.parse(asString).get();
+		assertEquals("de.flapdoodle.codedoc.sample",result.packageName().get());
+		assertEquals(2,result.parts().size());
+		
+		Part firstPart = result.parts().get(0);
+		assertEquals("ClassInMethod",firstPart.className());
+		assertFalse(firstPart.constructor().isPresent());
+		assertTrue(firstPart.method().isPresent());
+		assertEquals("someMethod",firstPart.method().get().name());
+		assertEquals("[]",firstPart.method().get().arguments().toString());
+		
+		Part secondPart = result.parts().get(1);
+		assertEquals("Embedded",secondPart.className());
+		assertFalse(secondPart.constructor().isPresent());
+		assertTrue(secondPart.method().isPresent());
+		assertEquals("methodInEmbedded",secondPart.method().get().name());
+		assertEquals("[]",secondPart.method().get().arguments().toString());
+		
+		assertEquals(Scope.Body,result.scope());
+	}
+	
+
+	@Test
+	public void constructorInClassInMethod() {
+		String asString="de.flapdoodle.codedoc.sample.ClassInMethod.someMethod().Embedded.Embedded(ClassInMethod, String)";
+		Reference result = Reference.parse(asString).get();
+		assertEquals("de.flapdoodle.codedoc.sample",result.packageName().get());
+		assertEquals(2,result.parts().size());
+		
+		Part firstPart = result.parts().get(0);
+		assertEquals("ClassInMethod",firstPart.className());
+		assertFalse(firstPart.constructor().isPresent());
+		assertTrue(firstPart.method().isPresent());
+		assertEquals("someMethod",firstPart.method().get().name());
+		assertEquals("[]",firstPart.method().get().arguments().toString());
+		
+		Part secondPart = result.parts().get(1);
+		assertEquals("Embedded",secondPart.className());
+		assertTrue(secondPart.constructor().isPresent());
+		assertFalse(secondPart.method().isPresent());
+		assertEquals("[ClassInMethod, String]",secondPart.constructor().get().arguments().toString());
+		
+		assertEquals(Scope.Body,result.scope());
 	}
 }

@@ -18,6 +18,7 @@ package de.flapdoodle.codedoc.resolver.java;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -67,6 +68,19 @@ public abstract class JavaParserTreeWalker {
 		return Optional.absent();
 	}
 
+	static <T extends Node> Optional<T> visit(Node parent, Function<Node, Optional<T>> matcher) {
+		Optional<T> ret = matcher.apply(parent);
+		if (!ret.isPresent()) {
+			for (Node sub : parent.getChildrenNodes()) {
+				Optional<T> match = matcher.apply(sub);
+				if (match.isPresent()) {
+					return match;
+				}
+			}
+		}
+		return ret;
+	}
+	
 	static Optional<ClassOrInterfaceDeclaration> rootClass(Node parent) {
 		return firstOf(parent, ClassOrInterfaceDeclaration.class, Predicates.alwaysTrue());
 	}

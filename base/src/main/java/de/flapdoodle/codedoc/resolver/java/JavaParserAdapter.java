@@ -151,14 +151,14 @@ public abstract class JavaParserAdapter {
 		return cut(code, first, last);
 	}
 
-	@Deprecated
-	static ImmutableList<TypeDeclaration> typeDeclarationOf(final Reference ref, CompilationUnit unit) {
-		return FluentIterable.from(unit.getTypes()).filter(new Predicate<TypeDeclaration>() {
-
-			@Override
-			public boolean apply(TypeDeclaration input) {
-				return input.getName().equals(ref.className());
-			}
-		}).toList();
-	}
+//	@Deprecated
+//	static ImmutableList<TypeDeclaration> typeDeclarationOf(final Reference ref, CompilationUnit unit) {
+//		return FluentIterable.from(unit.getTypes()).filter(new Predicate<TypeDeclaration>() {
+//
+//			@Override
+//			public boolean apply(TypeDeclaration input) {
+//				return input.getName().equals(ref.className());
+//			}
+//		}).toList();
+//	}
 }

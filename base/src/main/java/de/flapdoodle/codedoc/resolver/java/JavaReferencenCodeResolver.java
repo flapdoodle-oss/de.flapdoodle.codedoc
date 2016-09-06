@@ -75,7 +75,7 @@ public class JavaReferencenCodeResolver implements CodeResolver {
 	}
 
 	protected static Path asPath(Reference ref) {
-		String[] packageAndClassname = ref.packageAndClassname().split("\\.");
+		String[] packageAndClassname = (ref.packageName()+ref.parts().get(0).className()).split("\\.");
 		return packageAndClassname.length==1 ? Paths.get(packageAndClassname[0]) : Paths.get(packageAndClassname[0], Arrays.copyOfRange(packageAndClassname, 1,packageAndClassname.length));
 	}
 
