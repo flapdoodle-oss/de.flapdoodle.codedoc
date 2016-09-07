@@ -26,48 +26,95 @@ import de.flapdoodle.codedoc.common.Error;
 
 public class JavaSourceReferenceResolverImplTest {
 
-	private final String code="\n"
-			+ "\n"
-			+ "/* some comment */\n"
-			+ "import foo;\n"
-			+ "\n"
-			+ "public class Foo {/*comment*/}\n"
-			+ "\n"
-			+ "\n";
-
-	@Test
-	public void resolveClassWithDefaultScope() {
-		String match="public class Foo {/*comment*/}";
+	public static class SimpleTestCase {
 		
-		Reference ref=Reference.parse("foo.Foo").get();
-		Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
+		private final String simpleCode="\n"
+				+ "\n"
+				+ "/* some comment */\n"
+				+ "import foo;\n"
+				+ "\n"
+				+ "public class Foo {/*comment*/}\n"
+				+ "\n"
+				+ "\n";
+	
+		@Test
+		public void resolveClassWithDefaultScope() {
+			String match="public class Foo {/*comment*/}";
+			
+			Reference ref=Reference.parse("foo.Foo").get();
+			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, simpleCode);
+			
+			assertTrue(result.isLeft());
+			assertEquals(match, result.left().code());
+			assertEquals("java", result.left().type());
+		}
+	
+		@Test
+		public void resolveClassWithScopeBody() {
+			String match="/*comment*/";
+			
+			Reference ref=Reference.parse("foo.Foo body").get();
+			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, simpleCode);
+			
+			assertTrue(result.isLeft());
+			assertEquals(match, result.left().code());
+			assertEquals("java", result.left().type());
+		}
 		
-		assertTrue(result.isLeft());
-		assertEquals(match, result.left().code());
-		assertEquals("java", result.left().type());
-	}
-
-	@Test
-	public void resolveClassWithScopeBody() {
-		String match="/*comment*/";
+		@Test
+		public void resolveClassWithScopeAll() {
+			String match=simpleCode;
+			
+			Reference ref=Reference.parse("foo.Foo all").get();
+			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, simpleCode);
+			
+			assertTrue(result.isLeft());
+			assertEquals(match, result.left().code());
+			assertEquals("java", result.left().type());
+		}
 		
-		Reference ref=Reference.parse("foo.Foo body").get();
-		Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
-		
-		assertTrue(result.isLeft());
-		assertEquals(match, result.left().code());
-		assertEquals("java", result.left().type());
 	}
 	
-	@Test
-	public void resolveClassWithScopeAll() {
-		String match=code;
+	public static class ComplexCase {
 		
-		Reference ref=Reference.parse("foo.Foo all").get();
-		Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
+		private final String code="public class ClassInMethod {\n" + 
+				"\n" + 
+				"	public void someMethod() {\n" + 
+				"		class Embedded {\n" + 
+				"			\n" + 
+				"			public Embedded(String foo) {\n" + 
+				"				\n" + 
+				"			}\n" + 
+				"			\n" + 
+				"			public void methodInEmbedded() {\n" + 
+				"				/*method in embedded*/\n" + 
+				"			}\n" + 
+				"		};\n" + 
+				"	}\n" + 
+				"	\n" + 
+				"	class Anon {\n" + 
+				"\n" + 
+				"		public Anon(boolean bar) {\n" + 
+				"			\n" + 
+				"		}\n" + 
+				"		\n" + 
+				"		public void methodInAnon(int number) {\n" + 
+				"			\n" + 
+				"		}\n" + 
+				"	}\n" + 
+				"}";
 		
-		assertTrue(result.isLeft());
-		assertEquals(match, result.left().code());
-		assertEquals("java", result.left().type());
+		@Test
+		public void resolveMethodInEmbeddedClass() {
+			String match="/*method in embedded*/";
+			
+			Reference ref=Reference.parse("de.flapdoodle.codedoc.sample.ClassInMethod.someMethod().Embedded.methodInEmbedded()").get();
+			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
+			
+			assertTrue(result.isLeft());
+			assertEquals(match, result.left().code());
+			assertEquals("java", result.left().type());
+
+		}
 	}
 }

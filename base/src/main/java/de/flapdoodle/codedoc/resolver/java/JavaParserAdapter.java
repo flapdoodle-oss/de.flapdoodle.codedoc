@@ -71,8 +71,8 @@ public abstract class JavaParserAdapter {
 	static String info(Node node) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(node.getClass());
-		sb.append(" (").append(lineColumn(node.getBeginLine(), node.getBeginColumn())).append("-")
-				.append(lineColumn(node.getEndLine(), node.getEndColumn())).append(")");
+		sb.append(" (").append(lineColumn(node.getRange().begin.line, node.getRange().begin.column)).append("-")
+				.append(lineColumn(node.getRange().end.line, node.getRange().end.column)).append(")");
 		return sb.toString();
 	}
 
@@ -82,43 +82,59 @@ public abstract class JavaParserAdapter {
 
 	static Either<CompilationUnit, Error> parse(String code) {
 		try {
-			return Either.left(JavaParser.parse(new StringReader(code), true));
+			return Either.left(fixTree(JavaParser.parse(new StringReader(code), true)));
 		} catch (ParseException e) {
 			return Either.right(Error.with("parse " + code, e));
 		}
 	}
 
+	private static CompilationUnit fixTree(CompilationUnit src) {
+		// move block comment into matching node
+		return src;
+	}
+
 	static String cut(String code, Node node) {
 		if (node instanceof BlockComment) {
-			return cut(code, node.getBeginLine(), node.getBeginColumn(), node.getEndLine(), node.getEndColumn()-1);
+			return cut(code, node.getRange().begin.line, node.getRange().begin.column, node.getRange().end.line, node.getRange().end.column-1);
 		}
-		return cut(code, node.getBeginLine(), node.getBeginColumn(), node.getEndLine(), node.getEndColumn());
+		return cut(code, node.getRange().begin.line, node.getRange().begin.column, node.getRange().end.line, node.getRange().end.column);
 	}
 
 	private static String cut(String code, int beginLine, int beginColumn, int endLine, int endColumn) {
-		// System.out.println("" + beginLine + ":" + beginColumn + " - " +
-		// endLine + ":" + endColumn);
-		List<String> lines = codeLines(code);
-		// System.out.println(" -> " + formated(lines)+"="+lines.size());
-		List<String> matchingLines = lines.subList(beginLine - 1, endLine);
-		// System.out.println(" --> " +
-		// formated(matchingLines)+"="+matchingLines.size());
-		String firstLinePart = "";
-		Optional<String> lastLinePart = Optional.absent();
-		List<String> between = Lists.newArrayList();
-		if (matchingLines.size() == 1) {
-			firstLinePart = matchingLines.get(0).substring(beginColumn - 1, endColumn);
-			// System.out.println(" [" + firstLinePart+"]");
-		} else {
-			firstLinePart = matchingLines.get(0).substring(beginColumn - 1);
-			// System.out.println(" [" + firstLinePart);
-			lastLinePart = Optional.of(matchingLines.get(matchingLines.size() - 1).substring(0, endColumn));
-			// System.out.println("" + lastLinePart+"]");
-			between = matchingLines.subList(1, matchingLines.size() - 1);
+		try {
+			 System.out.println("" + beginLine + ":" + beginColumn + " - " +
+			 endLine + ":" + endColumn);
+			 if ((beginLine==endLine) && (beginColumn==endColumn)) {
+				 return "";
+			 }
+			 
+			List<String> lines = codeLines(code);
+	//		 System.out.println(" -> " + formated(lines)+"="+lines.size());
+			List<String> matchingLines = lines.subList(beginLine - 1, endLine);
+			// System.out.println(" --> " +
+			// formated(matchingLines)+"="+matchingLines.size());
+			String firstLinePart = "";
+			Optional<String> lastLinePart = Optional.absent();
+			List<String> between = Lists.newArrayList();
+			String firstLine = matchingLines.get(0);
+			if (matchingLines.size() == 1) {
+				firstLinePart = firstLine.substring(Math.min(beginColumn - 1,firstLine.length()), Math.min(firstLine.length(), endColumn));
+				// System.out.println(" [" + firstLinePart+"]");
+			} else {
+				firstLinePart = firstLine.substring(Math.min(beginColumn - 1,firstLine.length()));
+				// System.out.println(" [" + firstLinePart);
+				String lastLine = matchingLines.get(matchingLines.size() - 1);
+				lastLinePart = Optional.of(lastLine.substring(0, Math.min(lastLine.length(), endColumn)));
+				// System.out.println("" + lastLinePart+"]");
+				between = matchingLines.subList(1, matchingLines.size() - 1);
+			}
+	
+			return Joiner.on("").join(ImmutableList.<String>builder().add(firstLinePart).addAll(between)
+					.addAll(lastLinePart.asSet()).build());
+		} catch (RuntimeException rx) {
+			rx.printStackTrace();
+			throw new RuntimeException("failed",rx);
 		}
-
-		return Joiner.on("").join(ImmutableList.<String>builder().add(firstLinePart).addAll(between)
-				.addAll(lastLinePart.asSet()).build());
 	}
 
 	private static List<String> codeLines(String code) {
@@ -134,9 +150,9 @@ public abstract class JavaParserAdapter {
 
 	static String cut(String code, Node first, Node last) {
 		if (last instanceof BlockComment) {
-			return cut(code, first.getBeginLine(), first.getBeginColumn(), last.getEndLine(), last.getEndColumn()-1);
+			return cut(code, first.getRange().begin.line, first.getRange().begin.column, last.getRange().end.line, last.getRange().end.column-1);
 		}
-		return cut(code, first.getBeginLine(), first.getBeginColumn(), last.getEndLine(), last.getEndColumn());
+		return cut(code, first.getRange().begin.line, first.getRange().begin.column, last.getRange().end.line, last.getRange().end.column);
 	}
 
 	private static String formated(List<String> lines) {
@@ -146,8 +162,17 @@ public abstract class JavaParserAdapter {
 	static String bodyOf(String code, Node node) {
 		System.out.println("bodyOf "+tree(node, code, 0));
 		List<Node> children = node.getChildrenNodes();
-		Node first = children.get(0);
-		Node last = children.get(children.size() - 1);
+		ImmutableList<Node> nonEmptyChildren = FluentIterable.from(children)
+			.filter(new Predicate<Node>() {
+
+				@Override
+				public boolean apply(Node input) {
+					return input.getRange().begin.isBefore(input.getRange().end);
+				}
+				
+			}).toList();
+		Node first = nonEmptyChildren.get(0);
+		Node last = nonEmptyChildren.get(nonEmptyChildren.size() - 1);
 		return cut(code, first, last);
 	}
 
