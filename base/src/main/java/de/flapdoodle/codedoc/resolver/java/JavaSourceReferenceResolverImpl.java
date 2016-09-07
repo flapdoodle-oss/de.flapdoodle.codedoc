@@ -39,7 +39,7 @@ public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResol
 		.flatmapLeft(new Function<CompilationUnit, Either<CodeSample, Error>>() {
 			@Override
 			public Either<CodeSample, Error> apply(CompilationUnit unit) {
-				System.out.println("=>"+ JavaParserAdapter.tree(unit, code, 0));
+				System.out.println("=>\n"+ JavaParserAdapter.tree(unit, code, 0));
 				return resolve(ref, code, unit);
 			}
 		});

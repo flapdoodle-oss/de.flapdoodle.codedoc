@@ -17,23 +17,29 @@
 package de.flapdoodle.codedoc.resolver.java;
 
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.List;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseException;
+import com.github.javaparser.Range;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.comments.BlockComment;
+import com.github.javaparser.ast.expr.NameExpr;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
 import de.flapdoodle.codedoc.common.Either;
 import de.flapdoodle.codedoc.common.Error;
@@ -88,9 +94,37 @@ public abstract class JavaParserAdapter {
 		}
 	}
 
-	private static CompilationUnit fixTree(CompilationUnit src) {
+	private static <T extends Node> T fixTree(T src) {
+		ImmutableList<Node> nodes = ImmutableList.copyOf(src.getChildrenNodes());
+		for (int i=0;i<nodes.size();i++) {
+			Node n = nodes.get(i);
+			if (n.getRange().equals(Range.range(0, 0, 0, 0))) {
+				n.setParentNode(null);
+			} else {
+				Preconditions.checkArgument(contains(src, n),"%s(%s) - child %s(%s) is not in range",src.getClass().getSimpleName(),src.getRange(),n.getClass().getSimpleName(),n.getRange());
+				fixTree(n);
+			}
+			if (i+1<nodes.size()) {
+				Node next=nodes.get(i+1);
+				if (contains(n,next)) {
+					next.setParentNode(n);
+				}
+			}
+		}
+		
+		Collections.sort(src.getChildrenNodes(), Ordering.natural().onResultOf(new Function<Node, Comparable>() {
+
+			@Override
+			public Comparable apply(Node input) {
+				return input.getBegin();
+			}
+		}));
 		// move block comment into matching node
 		return src;
+	}
+
+	private static <T extends Node> boolean contains(T outer, Node inner) {
+		return !inner.getRange().begin.isBefore(outer.getRange().begin) && !inner.getRange().end.isAfter(outer.getRange().end);
 	}
 
 	static String cut(String code, Node node) {
@@ -104,9 +138,9 @@ public abstract class JavaParserAdapter {
 		try {
 			 System.out.println("" + beginLine + ":" + beginColumn + " - " +
 			 endLine + ":" + endColumn);
-			 if ((beginLine==endLine) && (beginColumn==endColumn)) {
-				 return "";
-			 }
+//			 if ((beginLine==endLine) && (beginColumn==endColumn)) {
+//				 return "";
+//			 }
 			 
 			List<String> lines = codeLines(code);
 	//		 System.out.println(" -> " + formated(lines)+"="+lines.size());
@@ -162,17 +196,23 @@ public abstract class JavaParserAdapter {
 	static String bodyOf(String code, Node node) {
 		System.out.println("bodyOf "+tree(node, code, 0));
 		List<Node> children = node.getChildrenNodes();
-		ImmutableList<Node> nonEmptyChildren = FluentIterable.from(children)
-			.filter(new Predicate<Node>() {
-
-				@Override
-				public boolean apply(Node input) {
-					return input.getRange().begin.isBefore(input.getRange().end);
-				}
-				
-			}).toList();
-		Node first = nonEmptyChildren.get(0);
-		Node last = nonEmptyChildren.get(nonEmptyChildren.size() - 1);
+//		ImmutableList<Node> nonEmptyChildren = FluentIterable.from(children)
+//			.filter(new Predicate<Node>() {
+//
+//				@Override
+//				public boolean apply(Node input) {
+//					return input.getRange().begin.isBefore(input.getRange().end);
+//				}
+//				
+//			}).toList();
+		int offset=0;
+		if (node instanceof ClassOrInterfaceDeclaration) {
+			if (children.get(0) instanceof NameExpr) {
+				offset=1;
+			}
+		}
+		Node first = children.get(offset);
+		Node last = children.get(children.size() - 1);
 		return cut(code, first, last);
 	}
 
