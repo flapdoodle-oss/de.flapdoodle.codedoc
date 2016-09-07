@@ -37,11 +37,7 @@ public class JavaSourceReferenceResolverImplTest {
 
 	@Test
 	public void resolveClassWithDefaultScope() {
-		String match="import foo;\n"
-				+ "\n"
-				+ "public class Foo {/*comment*/}\n"
-				+ "\n"
-				+ "\n";
+		String match="public class Foo {/*comment*/}";
 		
 		Reference ref=Reference.parse("foo.Foo").get();
 		Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);

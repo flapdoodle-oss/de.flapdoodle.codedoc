@@ -69,6 +69,8 @@ public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResol
 			}
 		}
 		
+		System.out.println(" current =>"+current);
+		
 		if (current.isPresent()) {
 			switch (ref.scope()) {
 			case All:
