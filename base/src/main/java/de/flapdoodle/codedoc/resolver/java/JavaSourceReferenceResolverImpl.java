@@ -16,10 +16,16 @@
  */
 package de.flapdoodle.codedoc.resolver.java;
 
+import java.util.List;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.type.Type;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -53,10 +59,25 @@ public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResol
 		for (final Reference.Part part : ref.parts()) {
 			if (current.isPresent()) {
 				if (part.constructor().isPresent()) {
-					
+					current = JavaParserTreeWalker.firstOf(current.get(), ConstructorDeclaration.class, new Predicate<ConstructorDeclaration>() {
+						@Override
+						public boolean apply(ConstructorDeclaration input) {
+							System.out.println("Constructor "+part.constructor().get());
+							System.out.println(" -> "+input.getParameters());
+							return parameterMatch(part.constructor().get().arguments(), input.getParameters());
+						}
+					});
 				} else {
 					if (part.method().isPresent()) {
-						
+						current = JavaParserTreeWalker.firstOf(current.get(), MethodDeclaration.class, new Predicate<MethodDeclaration>() {
+							@Override
+							public boolean apply(MethodDeclaration input) {
+								System.out.println("Method "+part.method().get());
+								System.out.println(" -> "+input.getName());
+								System.out.println(" -> "+input.getParameters());
+								return input.getName().equals(part.method().get().name()) && parameterMatch(part.method().get().arguments(), input.getParameters());
+							}
+						});
 					} else {
 						current = JavaParserTreeWalker.firstOf(current.get(), ClassOrInterfaceDeclaration.class, new Predicate<ClassOrInterfaceDeclaration>() {
 							@Override
@@ -108,6 +129,22 @@ public class JavaSourceReferenceResolverImpl implements JavaSourceReferenceResol
 		return Either.right(Error.with("fooo"));
 	}
 
+	private static boolean parameterMatch(ImmutableList<String> arguments, List<Parameter> parameters) {
+		if (arguments.size()==parameters.size()) {
+			for (int i=0;i<arguments.size();i++) {
+				String arg=arguments.get(i);
+				Parameter param = parameters.get(i);
+				String typeAsString  = param.getType().toString();
+				System.out.println("Arg "+arg+" ? Param "+typeAsString);
+				if (!arg.equals(typeAsString)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
 	private static Either<CodeSample, Error> codeOfClass(String code, CompilationUnit unit, Reference ref) {
 		switch (ref.scope()) {
 		case All:

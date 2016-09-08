@@ -106,9 +106,9 @@ public class JavaSourceReferenceResolverImplTest {
 		
 		@Test
 		public void resolveMethodInEmbeddedClass() {
-			String match="/*method in embedded*/";
+			String match="\n				/*method in embedded*/\n			";
 			
-			Reference ref=Reference.parse("de.flapdoodle.codedoc.sample.ClassInMethod.someMethod().Embedded.methodInEmbedded()").get();
+			Reference ref=Reference.parse("de.flapdoodle.codedoc.sample.ClassInMethod.someMethod().Embedded.methodInEmbedded() body").get();
 			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
 			
 			assertTrue(result.isLeft());

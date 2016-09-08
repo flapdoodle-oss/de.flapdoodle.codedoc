@@ -26,14 +26,18 @@ import com.github.javaparser.Range;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.ConstructorDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.comments.BlockComment;
 import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.stmt.BlockStmt;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -136,8 +140,7 @@ public abstract class JavaParserAdapter {
 
 	private static String cut(String code, int beginLine, int beginColumn, int endLine, int endColumn) {
 		try {
-			 System.out.println("" + beginLine + ":" + beginColumn + " - " +
-			 endLine + ":" + endColumn);
+//			 System.out.println("" + beginLine + ":" + beginColumn + " - " + endLine + ":" + endColumn);
 //			 if ((beginLine==endLine) && (beginColumn==endColumn)) {
 //				 return "";
 //			 }
@@ -210,6 +213,12 @@ public abstract class JavaParserAdapter {
 			if (children.get(0) instanceof NameExpr) {
 				offset=1;
 			}
+		}
+		if ((node instanceof MethodDeclaration) || (node instanceof ConstructorDeclaration)) {
+			Optional<BlockStmt> block = JavaParserTreeWalker.firstOf(node, BlockStmt.class, Predicates.alwaysTrue());
+			Preconditions.checkArgument(block.isPresent(),"method/constr does not have a BlockStmt: %s",node);
+			String blockcode = cut(code, block.get());
+			return blockcode.substring(1,blockcode.length()-1);
 		}
 		Node first = children.get(offset);
 		Node last = children.get(children.size() - 1);
