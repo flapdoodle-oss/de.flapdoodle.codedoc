@@ -27,7 +27,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-/**
+/*
  * @see https://maven.apache.org/guides/plugin/guide-java-plugin-development.html
  * @see https://books.sonatype.com/mvnref-book/reference/writing-plugins-sect-custom-plugin.html
  * @author mosmann
