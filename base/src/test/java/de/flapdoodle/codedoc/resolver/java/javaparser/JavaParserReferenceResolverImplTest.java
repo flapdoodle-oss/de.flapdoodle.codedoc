@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.codedoc.resolver.java;
+package de.flapdoodle.codedoc.resolver.java.javaparser;
 
 import static org.junit.Assert.*;
 
@@ -23,8 +23,10 @@ import org.junit.Test;
 import de.flapdoodle.codedoc.CodeSample;
 import de.flapdoodle.codedoc.common.Either;
 import de.flapdoodle.codedoc.common.Error;
+import de.flapdoodle.codedoc.resolver.java.Reference;
+import de.flapdoodle.codedoc.resolver.java.javaparser.JavaParserReferenceResolverImpl;
 
-public class JavaSourceReferenceResolverImplTest {
+public class JavaParserReferenceResolverImplTest {
 
 	public static class SimpleTestCase {
 		
@@ -42,7 +44,7 @@ public class JavaSourceReferenceResolverImplTest {
 			String match="public class Foo {/*comment*/}";
 			
 			Reference ref=Reference.parse("foo.Foo").get();
-			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, simpleCode);
+			Either<CodeSample, Error> result = new JavaParserReferenceResolverImpl().resolve(ref, simpleCode);
 			
 			assertTrue(result.isLeft());
 			assertEquals(match, result.left().code());
@@ -54,7 +56,7 @@ public class JavaSourceReferenceResolverImplTest {
 			String match="/*comment*/";
 			
 			Reference ref=Reference.parse("foo.Foo body").get();
-			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, simpleCode);
+			Either<CodeSample, Error> result = new JavaParserReferenceResolverImpl().resolve(ref, simpleCode);
 			
 			assertTrue(result.isLeft());
 			assertEquals(match, result.left().code());
@@ -66,7 +68,7 @@ public class JavaSourceReferenceResolverImplTest {
 			String match=simpleCode;
 			
 			Reference ref=Reference.parse("foo.Foo all").get();
-			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, simpleCode);
+			Either<CodeSample, Error> result = new JavaParserReferenceResolverImpl().resolve(ref, simpleCode);
 			
 			assertTrue(result.isLeft());
 			assertEquals(match, result.left().code());
@@ -109,7 +111,7 @@ public class JavaSourceReferenceResolverImplTest {
 			String match="\n				/*method in embedded*/\n			";
 			
 			Reference ref=Reference.parse("de.flapdoodle.codedoc.sample.ClassInMethod.someMethod().Embedded.methodInEmbedded() body").get();
-			Either<CodeSample, Error> result = new JavaSourceReferenceResolverImpl().resolve(ref, code);
+			Either<CodeSample, Error> result = new JavaParserReferenceResolverImpl().resolve(ref, code);
 			
 			assertTrue(result.isLeft());
 			assertEquals(match, result.left().code());

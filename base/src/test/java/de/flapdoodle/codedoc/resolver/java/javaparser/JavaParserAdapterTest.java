@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.flapdoodle.codedoc.resolver.java;
+package de.flapdoodle.codedoc.resolver.java.javaparser;
 
 import static org.junit.Assert.*;
 
@@ -35,6 +35,7 @@ import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
 
 import de.flapdoodle.codedoc.common.Either;
 import de.flapdoodle.codedoc.common.Error;
+import de.flapdoodle.codedoc.resolver.java.javaparser.JavaParserAdapter;
 
 public class JavaParserAdapterTest {
 
